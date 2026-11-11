@@ -10,7 +10,7 @@ jobs:
         os: [ubuntu-24.04, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
       - if: runner.os == 'Linux'
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     defaults: { run: { working-directory: web } }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with: { node-version: "22" }
       - run: npm ci
@@ -37,7 +37,7 @@ jobs:
   docker:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker build --target core -t afix:ci .
       # The command the README gives, on the image just built.
       - run: docker run -d --name afix -p 127.0.0.1:8765:8765 -v openaudiofix-data:/data afix:ci
@@ -52,7 +52,7 @@ jobs:
       # playwright.config.ts defaults to .venv; CI installs into the runner's Python instead
       AFIX_PYTHON: python
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
       - uses: actions/setup-node@v4
