@@ -1,0 +1,63 @@
+name: ci
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  python:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libsndfile1
+      - if: runner.os == 'macOS'
+        run: brew install ffmpeg
+      - if: runner.os == 'Windows'
+        run: choco install ffmpeg -y --no-progress
+      # pyproject.toml pins numpy 1.26.4, scipy 1.15.3, soundfile 0.13.1 (the versions the regression refs use)
+      - run: pip install -e ".[server,dev]"
+      - run: python -c "import numpy, scipy, soundfile; print(numpy.__version__, scipy.__version__, soundfile.__version__)"
+      # public parity compares output hashes only when the platform tag matches the recorded refs
+      - run: python -m pytest -m "not private and not docker and not slow" -q
+  web:
+    runs-on: ubuntu-24.04
+    defaults: { run: { working-directory: web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+  docker:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --target core -t afix:ci .
+      # The command the README gives, on the image just built.
+      - run: docker run -d --name afix -p 127.0.0.1:8765:8765 -v openaudiofix-data:/data afix:ci
+      - run: |
+          for i in $(seq 1 60); do curl -fs http://127.0.0.1:8765/api/health && exit 0; sleep 1; done
+          docker logs afix; exit 1
+      - run: curl -fs http://127.0.0.1:8765/ | grep -q OpenAudioFix
+  e2e:
+    needs: [python, web]
+    runs-on: ubuntu-24.04
+    env:
+      # playwright.config.ts defaults to .venv; CI installs into the runner's Python instead
+      AFIX_PYTHON: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg libsndfile1
+      - run: pip install -e ".[server]"
+      - run: npm ci && npm run build && npx playwright install --with-deps chromium && npx playwright test
+        working-directory: web

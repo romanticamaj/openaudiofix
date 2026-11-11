@@ -1,0 +1,23 @@
+# OpenAudioFix. Start:  docker compose up -d    then open http://127.0.0.1:8765/
+#
+# With an NVIDIA GPU (and the NVIDIA Container Toolkit), start the GPU version instead; background repair is
+# tested and enabled when it starts:
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
+# Both versions use the same data volume, so switching keeps your projects.
+name: openaudiofix
+services:
+  core:
+    image: ghcr.io/romanticamaj/openaudiofix:0.1.0
+    build: { context: ., dockerfile: Dockerfile, target: core }
+    ports: ["127.0.0.1:8765:8765"]
+    volumes:
+      - data:/data
+    environment: {}
+      # Host names besides 127.0.0.1/localhost/[::1] the UI may be reached under (comma-separated), e.g. a
+      # reverse proxy. Through the port mapping above the browser's Host is still 127.0.0.1:8765.
+      # AFIX_ALLOWED_HOSTS: studio.lan
+    restart: unless-stopped
+
+volumes:
+  data:
+    name: openaudiofix-data

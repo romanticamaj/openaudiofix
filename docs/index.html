@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenAudioFix: hear the repair</title>
+<meta name="description" content="Open-source audio repair that runs on your own computer. Listen to a real recording before and after.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#0a0b0f; --card:#12141a; --line:#242833; --text:#f4f5f7; --mute:#9aa1ad; --accent:#8b7cf6; --warn:#f59e0b; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 Inter,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:56px 16px 72px; }
+  header { display:flex; align-items:center; gap:12px; font-weight:600; }
+  header img { width:32px; height:32px; }
+  header a { margin-left:auto; color:var(--mute); text-decoration:none; font-weight:500; }
+  header a:hover { color:var(--text); }
+  h1 { font-size:clamp(32px,6vw,52px); line-height:1.1; letter-spacing:-.02em; margin:48px 0 12px; }
+  .lead { color:var(--mute); font-size:18px; max-width:640px; margin:0 0 32px; }
+  .player { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; }
+  canvas { display:block; width:100%; height:160px; border-radius:10px; background:#0d0f14; cursor:pointer; }
+  .row { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:16px; }
+  button { font:inherit; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:10px; padding:8px 14px; cursor:pointer; }
+  button:hover { border-color:#3a4050; }
+  button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  #play { width:46px; height:46px; padding:0; border:0; border-radius:50%; background:var(--text); color:#0a0b0f; font-size:16px; }
+  .seg { display:flex; gap:4px; padding:4px; border:1px solid var(--line); border-radius:12px; }
+  .seg button { border:0; }
+  .seg button[aria-pressed=true] { background:#262a35; font-weight:600; }
+  kbd { color:var(--mute); font:12px ui-monospace,Consolas,monospace; margin-left:6px; }
+  #time { font:15px ui-monospace,Consolas,monospace; color:var(--mute); margin-left:auto; }
+  .note { color:var(--mute); font-size:14px; margin:16px 0 0; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:24px 0 40px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .stat b { display:block; font-size:26px; letter-spacing:-.01em; }
+  .stat span { color:var(--mute); font-size:14px; }
+  img.wide { display:block; width:100%; border-radius:14px; border:1px solid var(--line); margin:16px 0 40px; }
+  h2 { font-size:24px; letter-spacing:-.01em; margin:40px 0 8px; }
+  .cta { display:inline-block; background:var(--text); color:#0a0b0f; font-weight:600; text-decoration:none; padding:12px 20px; border-radius:12px; }
+  pre { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; overflow-x:auto; font:14px ui-monospace,Consolas,monospace; }
+</style>
+</head>
+<body>
+<main>
+  <header><img src="assets/logo.svg" alt=""><span>OpenAudioFix</span><a href="https://github.com/romanticamaj/openaudiofix">GitHub</a></header>
+  <h1>Hear the repair.</h1>
+  <p class="lead">Ten seconds of a real recording, damaged by too much input gain and audio-interface dropouts. Press play, then switch while it runs.</p>
+
+  <section class="player" aria-label="Before and after player">
+    <canvas id="wave" width="1840" height="320" aria-label="Waveform. Click to seek."></canvas>
+    <div class="row">
+      <button id="play" aria-label="Play">&#9654;</button>
+      <div class="seg" role="group" aria-label="Which version to hear">
+        <button data-k="before" aria-pressed="true">Before<kbd>1</kbd></button>
+        <button data-k="after" aria-pressed="false">After<kbd>2</kbd></button>
+        <button data-k="difference" aria-pressed="false">Difference<kbd>3</kbd></button>
+      </div>
+      <span id="time">0:00.0 / 0:10.0</span>
+    </div>
+    <p class="note" id="status">All three are the same 256 kbps MP3 export at the same gain, so only the repair differs. Difference is what was changed, and nothing else.</p>
+    <noscript><p class="note"><a href="demo/before.mp3">Before</a> · <a href="demo/after.mp3">After</a> · <a href="demo/difference.mp3">Difference</a></p></noscript>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><b>228</b><span>clipped peaks rebuilt</span></div>
+    <div class="stat"><b>3</b><span>dropout seams repaired</span></div>
+    <div class="stat"><b>94.5%</b><span>of samples left exactly as recorded</span></div>
+  </div>
+
+  <h2>Peaks, rebuilt</h2>
+  <img class="wide" src="assets/peaks.svg" alt="Before: peaks cut flat at full scale. After: rounded peaks restored above it.">
+
+  <h2>You see every fix</h2>
+  <img class="wide" src="screenshots/results.png" alt="The results workspace: waveform with marked fixes, spectrogram, and a list of every repair.">
+
+  <h2>Runs on your computer</h2>
+  <p class="lead">No account and no upload. Your recordings stay on your machine.</p>
+  <pre>docker run -p 127.0.0.1:8765:8765 -v openaudiofix-data:/data ghcr.io/romanticamaj/openaudiofix:0.1.0</pre>
+  <a class="cta" href="https://github.com/romanticamaj/openaudiofix">Get OpenAudioFix</a>
+</main>
+<script>
+(() => {
+  const names = ["before", "after", "difference"];
+  const canvas = document.getElementById("wave"), g = canvas.getContext("2d");
+  const playBtn = document.getElementById("play"), time = document.getElementById("time"), status = document.getElementById("status");
+  const seg = [...document.querySelectorAll(".seg button")];
+  let ctx, buffers = {}, gains = {}, sources = [], current = "before", playing = false, startedAt = 0, offset = 0, loading = null;
+
+  const fmt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}`;
+  const duration = () => buffers.before ? buffers.before.duration : 10;
+  const position = () => playing ? Math.min(ctx.currentTime - startedAt, duration()) : offset;
+
+  function load() {
+    if (loading) return loading;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    loading = Promise.all(names.map(async (n) => {
+      const data = await (await fetch(`demo/${n}.mp3`)).arrayBuffer();
+      buffers[n] = await ctx.decodeAudioData(data);
+    })).then(() => { draw(); });
+    return loading;
+  }
+
+  function draw() {
+    const W = canvas.width, H = canvas.height, mid = H / 2;
+    g.clearRect(0, 0, W, H);
+    const b = buffers[current];
+    if (b) {
+      const d = b.getChannelData(0), step = Math.floor(d.length / W);
+      g.fillStyle = current === "after" ? "#8b7cf6" : current === "difference" ? "#f59e0b" : "#7d8493";
+      for (let x = 0; x < W; x++) {
+        let lo = 1, hi = -1;
+        for (let i = x * step, e = i + step; i < e; i += 8) { const v = d[i]; if (v < lo) lo = v; if (v > hi) hi = v; }
+        g.fillRect(x, mid - hi * mid, 1, Math.max(1, (hi - lo) * mid));
+      }
+    } else {
+      g.fillStyle = "#2a2e38"; g.fillRect(0, mid, W, 2);
+    }
+    const x = position() / duration() * W;
+    g.fillStyle = "#f4f5f7"; g.fillRect(x, 0, 3, H);
+  }
+
+  function stopSources() { sources.forEach((s) => { s.onended = null; try { s.stop(); } catch (e) { /* already stopped */ } }); sources = []; }
+
+  function start(at) {
+    stopSources();
+    // Every version runs at once on one clock; switching only moves the gain, so the word never jumps.
+    names.forEach((n) => {
+      const s = ctx.createBufferSource(), gn = ctx.createGain();
+      s.buffer = buffers[n]; gn.gain.value = n === current ? 1 : 0;
+      s.connect(gn).connect(ctx.destination); s.start(0, at);
+      gains[n] = gn; sources.push(s);
+    });
+    sources[0].onended = () => { if (playing) { playing = false; offset = 0; ui(); } };
+    startedAt = ctx.currentTime - at; offset = at; playing = true;
+    ui(); tick();
+  }
+
+  function pause() { offset = position(); playing = false; stopSources(); ui(); }
+
+  function ui() {
+    playBtn.innerHTML = playing ? "&#10074;&#10074;" : "&#9654;";
+    playBtn.setAttribute("aria-label", playing ? "Pause" : "Play");
+    seg.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === current)));
+    time.textContent = `${fmt(position())} / ${fmt(duration())}`;
+    draw();
+  }
+
+  function tick() { if (!playing) return; ui(); requestAnimationFrame(tick); }
+
+  function choose(k) {
+    current = k;
+    if (playing) names.forEach((n) => { gains[n].gain.setTargetAtTime(n === k ? 1 : 0, ctx.currentTime, 0.005); });
+    ui();
+  }
+
+  async function toggle() {
+    try {
+      await load();
+      await ctx.resume();
+      playing ? pause() : start(offset >= duration() ? 0 : offset);
+    } catch (e) {
+      status.innerHTML = 'The player could not load here. Open <a href="demo/before.mp3">before</a>, <a href="demo/after.mp3">after</a> or <a href="demo/difference.mp3">difference</a> directly.';
+    }
+  }
+
+  playBtn.addEventListener("click", toggle);
+  seg.forEach((b) => b.addEventListener("click", () => choose(b.dataset.k)));
+  canvas.addEventListener("click", async (e) => {
+    await load();
+    const r = canvas.getBoundingClientRect(), at = (e.clientX - r.left) / r.width * duration();
+    if (playing) start(at); else { offset = at; ui(); }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === " " && e.target === document.body) { e.preventDefault(); toggle(); }
+    const k = names[Number(e.key) - 1];
+    if (k) choose(k);
+  });
+  draw();
+})();
+</script>
+</body>
+</html>

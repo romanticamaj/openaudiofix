@@ -1,0 +1,21 @@
+*
+!pyproject.toml
+!README.md
+!openaudiofix/
+!server/
+!web/
+web/node_modules/
+web/dist/
+**/__pycache__/
+**/*.egg-info/
+# belt and braces: no audio or decoded data may ever enter the build context
+**/*.wav
+**/*.mp3
+**/*.flac
+**/*.m4a
+**/*.ogg
+**/*.opus
+**/*.aac
+**/*.npy
+**/*.mp4
+**/*.mkv

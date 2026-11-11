@@ -1,0 +1,10 @@
+# The GPU version of the same service (ADR-0012): the gpu image target and the host's NVIDIA GPUs.
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
+services:
+  core:
+    image: ghcr.io/romanticamaj/openaudiofix-gpu:0.1.0
+    build: { target: gpu }
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]

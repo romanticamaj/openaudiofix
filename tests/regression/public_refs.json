@@ -1,0 +1,14 @@
+{
+ "declip": {
+  "sha256": "ffaa968ada7b9ed64c1c69b844fe994134e22260d710ae8e905bc4e7e508d514",
+  "n_fixes": 1360,
+  "gain_db": -8.37,
+  "platform": "win32-numpy1.26.4-scipy1.15.3"
+ },
+ "glitch": {
+  "sha256": "0d60f69aa448e1e761b4ac0e64deebc7535ec7dbfe2ec92cbb3684eb8036e816",
+  "n_fixes": 17,
+  "gain_db": 0.0,
+  "platform": "win32-numpy1.26.4-scipy1.15.3"
+ }
+}
