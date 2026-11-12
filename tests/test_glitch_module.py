@@ -31,14 +31,17 @@ def test_glitch_repair_equals_algorithm_and_only_touches_fix_regions():
     y, pos = _glitchy()
     calls = []
     res = modules.get("glitch").repair(y, 48000, {}, lambda pct=None, message=None: calls.append(message))
-    ref = DK.repair_file([y[:, c].copy() for c in range(2)], 48000, None)[0]
-    assert np.array_equal(res.audio, np.stack(ref, axis=1))
+    ref = np.stack(DK.repair_file([y[:, c].copy() for c in range(2)], 48000, None)[0], axis=1)
     # the mask comes from the RETURNED fixes, not from the diff: outside every fix the audio is untouched
     assert res.fixes
     mask = np.ones(len(y), bool)
     for f in res.fixes:
         mask[f.start:f.end] = False
-    assert np.array_equal(res.audio[mask], y[mask])
+    assert np.array_equal(res.audio[mask], y[mask]) and np.array_equal(ref[mask], y[mask])
+    # Inside the fixes the samples are computed, and on macOS arm64 two runs of the same repair can differ in
+    # the last bits (measured: at most 5.1e-15 over 30 runs). 1e-9 allows that and still fails on a float32
+    # round trip (~6e-8), a gain or a channel swap in the module.
+    assert np.allclose(res.audio[~mask], ref[~mask], rtol=0, atol=1e-9)
     assert res.audio.shape == y.shape and not np.array_equal(res.audio, y)
     # seed 5 measured: 4 of 8 audible injected positions are inside a fix (v5 misses the rest; the other
     # 2 positions are in synthetic pauses). Margin: require >= 40% (3.2 -> 4).

@@ -26,3 +26,4 @@ Every bug that reached a person, and the test that keeps it fixed. A new bug add
 | Export scrubbing rewrote a test's example path and broke the public test suite | `tests/test_export_public.py::test_export_changes_no_source_file` |
 | `requires-python` allowed versions the pinned numpy has no wheels for | `tests/test_export_public.py::test_python_range_stops_where_the_pinned_numpy_has_wheels` |
 | GPU image build failed: pip 24.0 in the base image rejects `--progress-bar raw` | `tests/test_gpu_install.py::test_pip_commands_ask_for_raw_progress_only_where_pip_has_it` |
+| Glitch module test compared computed samples bit-exactly and failed intermittently on macOS arm64 (last-bit differences, max 5.1e-15) | `tests/test_glitch_module.py::test_glitch_repair_equals_algorithm_and_only_touches_fix_regions` |
