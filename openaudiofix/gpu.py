@@ -96,10 +96,23 @@ def _constraints():
     return pins
 
 
-def pip_commands(constraints_path, python=None):
-    """The locked packages under the core's pins, then ClearVoice on its own (--no-deps)."""
-    pip = [python or sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--no-input",
-           "--progress-bar", "raw"]
+def pip_version(python=None):
+    """(major, minor) of the pip that `python` runs, or None when it cannot be asked."""
+    try:
+        out = subprocess.run([python or sys.executable, "-m", "pip", "--version"], capture_output=True,
+                             text=True, timeout=60).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    m = re.match(r"pip (\d+)\.(\d+)", out)
+    return (int(m.group(1)), int(m.group(2))) if m else None
+
+
+def pip_commands(constraints_path, python=None, pip_version=None):
+    """The locked packages under the core's pins, then ClearVoice on its own (--no-deps).
+    `--progress-bar raw` exists from pip 24.1; older pips get pip's own bar and progress per file."""
+    pip = [python or sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--no-input"]
+    if pip_version and pip_version >= (24, 1):
+        pip += ["--progress-bar", "raw"]
     return [pip + ["--extra-index-url", TORCH_INDEX, "-c", str(constraints_path), "-r", str(LOCK)],
             pip + ["--no-deps", CLEARVOICE]]
 
@@ -151,7 +164,7 @@ def install(report=lambda **kw: None, python=None):
         cpath = Path(td) / "core-constraints.txt"
         cpath.write_text("\n".join(_constraints()) + "\n", encoding="utf-8")
         prog = PipProgress()
-        for cmd in pip_commands(cpath, python):
+        for cmd in pip_commands(cpath, python, pip_version(python)):
             tail = []
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                  text=True, encoding="utf-8", errors="replace", bufsize=1)

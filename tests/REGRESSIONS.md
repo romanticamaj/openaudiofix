@@ -25,3 +25,4 @@ Every bug that reached a person, and the test that keeps it fixed. A new bug add
 | Restart from Settings had to pick up the new folder | `tests/server/test_launcher.py::test_restart_from_settings_comes_back_on_the_folder_saved_for_the_next_start` |
 | Export scrubbing rewrote a test's example path and broke the public test suite | `tests/test_export_public.py::test_export_changes_no_source_file` |
 | `requires-python` allowed versions the pinned numpy has no wheels for | `tests/test_export_public.py::test_python_range_stops_where_the_pinned_numpy_has_wheels` |
+| GPU image build failed: pip 24.0 in the base image rejects `--progress-bar raw` | `tests/test_gpu_install.py::test_pip_commands_ask_for_raw_progress_only_where_pip_has_it` |

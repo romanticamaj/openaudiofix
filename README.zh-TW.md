@@ -39,7 +39,7 @@
 用 Docker 啟動，然後打開 <http://127.0.0.1:8765/>：
 
 ```bash
-docker run -p 127.0.0.1:8765:8765 -v openaudiofix-data:/data ghcr.io/romanticamaj/openaudiofix:0.1.0
+docker run -p 127.0.0.1:8765:8765 -v openaudiofix-data:/data ghcr.io/romanticamaj/openaudiofix:0.1.1
 ```
 
 丟進檔案，選要修的項目，試聽，匯出。ffmpeg 讀得了的格式都能用，匯出是 WAV。

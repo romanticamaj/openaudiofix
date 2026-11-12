@@ -7,7 +7,7 @@
 name: openaudiofix
 services:
   core:
-    image: ghcr.io/romanticamaj/openaudiofix:0.1.0
+    image: ghcr.io/romanticamaj/openaudiofix:0.1.1
     build: { context: ., dockerfile: Dockerfile, target: core }
     ports: ["127.0.0.1:8765:8765"]
     volumes:

@@ -2,7 +2,7 @@
 #   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
 services:
   core:
-    image: ghcr.io/romanticamaj/openaudiofix-gpu:0.1.0
+    image: ghcr.io/romanticamaj/openaudiofix-gpu:0.1.1
     build: { target: gpu }
     deploy:
       resources:

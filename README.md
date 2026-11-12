@@ -47,7 +47,7 @@ peaks and 3 dropouts. Switch between before, after and difference while it plays
 Start it with Docker, then open <http://127.0.0.1:8765/>:
 
 ```bash
-docker run -p 127.0.0.1:8765:8765 -v openaudiofix-data:/data ghcr.io/romanticamaj/openaudiofix:0.1.0
+docker run -p 127.0.0.1:8765:8765 -v openaudiofix-data:/data ghcr.io/romanticamaj/openaudiofix:0.1.1
 ```
 
 Drop in a file, choose the repairs, listen, export. Any format ffmpeg reads is accepted, and export gives you a WAV.
@@ -59,7 +59,7 @@ You need the NVIDIA driver and the NVIDIA Container Toolkit. The image is about 
 the model.
 
 ```bash
-docker run --gpus all -p 127.0.0.1:8765:8765 -v openaudiofix-data:/data ghcr.io/romanticamaj/openaudiofix-gpu:0.1.0
+docker run --gpus all -p 127.0.0.1:8765:8765 -v openaudiofix-data:/data ghcr.io/romanticamaj/openaudiofix-gpu:0.1.1
 ```
 
 Both images use the same data volume, so switching keeps your projects.

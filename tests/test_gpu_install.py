@@ -27,12 +27,25 @@ def test_lock_adds_to_the_core_and_never_repins_it():
 
 def test_pip_commands_constrain_to_the_core_pins_and_install_clearvoice_alone(tmp_path):
     first, second = G.pip_commands(tmp_path / "c.txt", python="py")
-    assert first[:4] == ["py", "-m", "pip", "install"] and "--progress-bar" in first
+    assert first[:4] == ["py", "-m", "pip", "install"]
     assert first[first.index("-c") + 1] == str(tmp_path / "c.txt") and first[first.index("-r") + 1] == str(G.LOCK)
     assert G.TORCH_INDEX in first
     assert second[-2:] == ["--no-deps", "clearvoice==0.1.2"]
     pins = G._constraints()
     assert "numpy==1.26.4" in pins and "scipy==1.15.3" in pins and "soundfile==0.13.1" in pins
+
+
+@pytest.mark.parametrize("version, raw", [((24, 0), False), ((23, 2), False), ((24, 1), True), ((25, 0), True),
+                                          (None, False)])
+def test_pip_commands_ask_for_raw_progress_only_where_pip_has_it(tmp_path, version, raw):
+    # The GPU image's base ships pip 24.0, which rejects --progress-bar raw (added in 24.1).
+    for cmd in G.pip_commands(tmp_path / "c.txt", python="py", pip_version=version):
+        assert ("raw" in cmd) == raw
+
+
+def test_pip_version_reads_the_target_interpreter():
+    assert G.pip_version(sys.executable) >= (19, 0)
+    assert G.pip_version(str(ROOT / "no-such-python")) is None
 
 
 def test_pip_progress_follows_downloads():
@@ -58,6 +71,7 @@ def test_install_reports_pip_failure(monkeypatch):
         def wait(self):
             return 1
     monkeypatch.setattr(G.subprocess, "Popen", Proc)
+    monkeypatch.setattr(G, "pip_version", lambda python=None: (25, 0))
     with pytest.raises(RuntimeError, match="No matching distribution"):
         G.install()
 
@@ -74,6 +88,7 @@ def test_install_runs_both_steps_and_reports(monkeypatch):
         def wait(self):
             return 0
     monkeypatch.setattr(G.subprocess, "Popen", Proc)
+    monkeypatch.setattr(G, "pip_version", lambda python=None: (25, 0))
     G.install(lambda **kw: seen.append(kw))
     assert len(cmds) == 2 and cmds[1][-1] == "clearvoice==0.1.2"
     assert seen[-1]["pct"] == 100.0 and any(s["phase"] == "installing" for s in seen)

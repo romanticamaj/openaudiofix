@@ -380,7 +380,7 @@ def create_app(data_dir=None, gpu=None):
             ticker.cancel()
             app.state.gpu.shutdown()  # the GPU worker is this process's child
 
-    app = FastAPI(title="OpenAudioFix", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="OpenAudioFix", version="0.1.1", lifespan=lifespan)
     app.add_middleware(LocalOnlyMiddleware, hosts=allowed_hosts())
     app.state.storage, app.state.db = st, cx
     app.state.gpu = gpu

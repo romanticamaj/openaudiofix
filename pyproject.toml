@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openaudiofix"
-version = "0.1.0"
+version = "0.1.1"
 description = "Self-hosted audio repair studio: buffer-dropout glitches, clipping, background noise."
 readme = "README.md"
 license = { text = "MIT" }

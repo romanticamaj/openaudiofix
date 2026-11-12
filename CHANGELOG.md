@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](https://semver.org/).
 
+## 0.1.1
+
+- The GPU Docker image builds again: the GPU install now works with pip older than 24.1.
+
 ## 0.1.0
 
 First public release.
